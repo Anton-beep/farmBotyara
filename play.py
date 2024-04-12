@@ -1,3 +1,4 @@
+from modules.window_manager import WindowManager
 from modules.keyboard import Keyboard
 from modules.mouse import Mouse
 
@@ -8,9 +9,34 @@ import win32con
 
 mouse = Mouse(800)
 keyboard = Keyboard()
-keyboard.release_all_keys()
-mouse.up_left()
-mouse.up_right()
+windows = WindowManager()
+windows.find_window_wildcard(".*HELLDIVERS.*")
+coefficient = 1
+
+
+def init_start():
+    time.sleep(1)
+    keyboard.release_all_keys()
+    mouse.up_left()
+    mouse.up_right()
+    time.sleep(1)
+    windows.set_foreground()
+    keyboard.type_key('Key.cmd')
+    time.sleep(1)
+    mouse.move_absolute(100, 5)
+    time.sleep(1)
+    keyboard.type_key('Key.cmd')
+    time.sleep(1)
+    mouse.click_left()
+    time.sleep(1)
+    keyboard.alt_tab()
+    time.sleep(1)
+    mouse.move_to_center()
+    time.sleep(1)
+    windows.set_foreground()
+    time.sleep(1)
+    mouse.click_left()
+    mouse.click_left()
 
 
 def playback_events():
@@ -26,7 +52,7 @@ def playback_events():
 
         if event_type == 'move':
             x, y = args[0], args[1]
-            mouse.move_relative(x, y)
+            mouse.move_relative(x, y, coefficient, coefficient)
         elif event_type == 'click':
             x, y, button, pressed = args[0], args[1], args[2], args[3]
             if pressed:
@@ -44,7 +70,7 @@ def playback_events():
             x, y, dx, dy = args[0], args[1], args[2], args[3]
             win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL, x, y, dy, 0)
 
-        elif event_type in ['keypress', 'keyrelease']:
+        elif event_type in ['keydown', 'keyup']:
             key = args[0]
             if event_type == 'keypress':
                 keyboard.press_key(key)
@@ -54,7 +80,5 @@ def playback_events():
     keyboard.release_all_keys()
 
 
-time.sleep(1)
-mouse.move_to_center()
-time.sleep(1)
+init_start()
 playback_events()

@@ -183,6 +183,7 @@ class Keyboard:
             None
         """
         self.press_key(key)
+        time.sleep(0.01)
         self.release_key(key)
 
     def alt_tab(self) -> None:

@@ -157,4 +157,3 @@ class Mouse:
         command = self.mouse_input(0, 0, 0, self.right_up, 0, None)
         settings = self.input(self.input_mouse, command)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
-
