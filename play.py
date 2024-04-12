@@ -9,6 +9,8 @@ import win32con
 mouse = Mouse(800)
 keyboard = Keyboard()
 keyboard.release_all_keys()
+mouse.up_left()
+mouse.up_right()
 
 
 def playback_events():
