@@ -26,7 +26,8 @@ class Point(ctypes.Structure):
 
 class Mouse:
     """Represents a mouse."""
-    def __init__(self, dpi: int, mouse_input_c: type, input_c: type):
+
+    def __init__(self, dpi: int, mouse_input_c: type = MouseInput, input_c: type = Input):
         """
         Initializes the Mouse object.
 
@@ -46,6 +47,7 @@ class Mouse:
         self.y_size = ctypes.windll.user32.GetSystemMetrics(1)
         self.now_x, self.now_y = 0, 0
         self.left_down, self.left_up = 0x0002, 0x0004
+        self.right_down, self.right_up = 0x0008, 0x0010
         self.x_offset, self.y_offset = 0, 0
         self.user32 = ctypes.windll.user32
 
@@ -120,8 +122,39 @@ class Mouse:
         """Moves the mouse to the center of the screen."""
         self.move_absolute(self.x_size // 2, self.y_size // 2)
 
-    def click(self):
+    def click_left(self):
         """Simulates a mouse click."""
         command = self.mouse_input(0, 0, 0, self.left_down | self.left_up, 0, None)
         settings = self.input(self.input_mouse, command)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
+
+    def click_right(self):
+        """Simulates a mouse right click."""
+        command = self.mouse_input(0, 0, 0, self.right_down | self.right_up, 0, None)
+        settings = self.input(self.input_mouse, command)
+        ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
+
+    def down_left(self):
+        """Simulates left mouse button down."""
+        command = self.mouse_input(0, 0, 0, self.left_down, 0, None)
+        settings = self.input(self.input_mouse, command)
+        ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
+
+    def up_left(self):
+        """Simulates left mouse button up."""
+        command = self.mouse_input(0, 0, 0, self.left_up, 0, None)
+        settings = self.input(self.input_mouse, command)
+        ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
+
+    def down_right(self):
+        """Simulates right mouse button down."""
+        command = self.mouse_input(0, 0, 0, self.right_down, 0, None)
+        settings = self.input(self.input_mouse, command)
+        ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
+
+    def up_right(self):
+        """Simulates right mouse button up."""
+        command = self.mouse_input(0, 0, 0, self.right_up, 0, None)
+        settings = self.input(self.input_mouse, command)
+        ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
+
