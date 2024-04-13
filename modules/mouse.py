@@ -1,4 +1,6 @@
+import asyncio
 import ctypes
+import time
 from ctypes import wintypes
 from typing import Tuple
 
@@ -157,3 +159,55 @@ class Mouse:
         command = self.mouse_input(0, 0, 0, self.right_up, 0, None)
         settings = self.input(self.input_mouse, command)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(settings), ctypes.sizeof(settings))
+
+
+class MouseListener:
+    def __init__(self, mouse_obj: Mouse):
+        self.mouse_obj = mouse_obj
+        self.stop_listening = False
+        self.time_start = 0
+        self.mouse_lb = 0x01
+        self.mouse_rb = 0x02
+        self.mouse_buttons = {'left': False, 'right': False}
+        self.presses = []
+        self.releases = []
+        self.moves = []
+
+    async def click_listener(self):
+        while not self.stop_listening:
+            if self.mouse_obj.user32.GetAsyncKeyState(self.mouse_lb) != 0:  # pressed upped left key
+                if not self.mouse_buttons['left']:
+                    self.presses.append(['left', time.time() - self.time_start])
+                    self.mouse_buttons['left'] = True
+            elif not self.mouse_obj.user32.GetAsyncKeyState(self.mouse_lb):  # unpressed downed left key
+                if self.mouse_buttons['left']:
+                    self.releases.append(['left', time.time() - self.time_start])
+                    self.mouse_buttons['left'] = False
+
+            if self.mouse_obj.user32.GetAsyncKeyState(self.mouse_rb) != 0:  # pressed upped right key
+                if not self.mouse_buttons['right']:
+                    self.presses.append(['right', time.time() - self.time_start])
+                    self.mouse_buttons['right'] = True
+            elif not self.mouse_obj.user32.GetAsyncKeyState(self.mouse_rb):  # unpressed downed right key
+                if self.mouse_buttons['right']:
+                    self.releases.append(['right', time.time() - self.time_start])
+                    self.mouse_buttons['right'] = False
+
+            await asyncio.sleep(0.1)
+
+            print(self.presses, self.releases, sep='\n')
+            print()
+
+    async def start_tasks(self):
+        clicks = asyncio.create_task(self.click_listener())
+        await clicks
+
+    def start_listening(self):
+        self.time_start = time.time()
+        asyncio.run(self.start_tasks())
+
+
+# mouse = Mouse(800)
+# listener = MouseListener(mouse)
+#
+# listener.start_listening()

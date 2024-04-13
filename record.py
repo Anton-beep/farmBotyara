@@ -3,7 +3,9 @@ from pynput import mouse, keyboard
 import time
 import json
 
-events = []
+mouse_move = []
+key_down = []
+key_up = []
 
 COEF = 1
 
@@ -20,21 +22,20 @@ def on_move(*args):
     x, y = mouse_.get_pos()
     dx, dy = int(x - last_x), int(y - last_y)
 
-    if abs(dx) > mouse_.x_size * 0.4 or abs(dy) > mouse_.y_size * 0.4:
+    if abs(dx) > mouse_.x_size * 0.1 or abs(dy) > mouse_.y_size * 0.1:
         pass
     else:
-        events.append(('move', dx, dy, time.time() - start_time))
-
-    last_x, last_y = x, y
-    # time.sleep(0.001)  # sleep a bit to reduce CPU usage
+        if abs(dx) > 15 or abs(dy) > 15:
+            mouse_move.append(('move', dx, dy, time.time() - start_time))
+            last_x, last_y = x, y
 
 
 def on_click(x, y, button, pressed):
-    events.append(('click', 0, 0, str(button), pressed, time.time() - start_time))
+    mouse_move.append(('click', 0, 0, str(button), pressed, time.time() - start_time))
 
 
 def on_scroll(x, y, dx, dy):
-    events.append(('scroll', x, y, dx, dy, time.time() - start_time))
+    mouse_move.append(('scroll', x, y, dx, dy, time.time() - start_time))
 
 
 def on_press(key):
@@ -43,16 +44,16 @@ def on_press(key):
         if pressed_keys[key]:
             pass
         else:
-            events.append(('keydown', key, time.time() - start_time))
+            key_down.append((key, time.time() - start_time))
             pressed_keys[key] = True
     else:
-        events.append(('keydown', key, time.time() - start_time))
+        key_down.append((key, time.time() - start_time))
         pressed_keys.update({key: True})
 
 
 def on_release(key):
     key = str(key).replace("'", "")
-    events.append(('keyup', key, time.time() - start_time))
+    key_up.append((key, time.time() - start_time))
     pressed_keys[key] = False
     if key == "Key.esc":
         return False  # Stop listener
@@ -76,7 +77,13 @@ keyboard_listener.start()
 keyboard_listener.join()
 mouse_listener.stop()
 
-with open('events.json', 'w') as f:
-    json.dump(events, f)
+with open('mouse_move.json', 'w') as f:
+    json.dump(mouse_move, f)
+
+with open('key_down.json', 'w') as f:
+    json.dump(key_down, f)
+
+with open('key_up.json', 'w') as f:
+    json.dump(key_up, f)
 
 print(f'time recording: {abs(start_time - time.time())}\n')
